@@ -80,15 +80,24 @@ if uploaded_file is not None:
             rmse = np.sqrt(mean_squared_error(test["Sales"], forecast_series))
 
         # --- UI LAYOUT KPI CARDS ---
+        # Safely extract model orders regardless of underlying object type
+        try:
+            model_name = f"SARIMA{model.order}x{model.seasonal_order}"
+        except AttributeError:
+            # Fallback parsing for native statsmodels results objects
+            try:
+                # Extracts spec info directly from statsmodels summary data structures
+                model_name = model.model.specification['specification_string']
+            except Exception:
+                model_name = "SARIMA (Optimized)"
+
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.markdown(f'<div class="metric-box"><div class="metric-title">MODEL CONFIG IDENTIFIED</div><div class="metric-value" style="font-size:20px;">SARIMA{model.order}x{model.seasonal_order}</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="metric-box"><div class="metric-title">MODEL CONFIG IDENTIFIED</div><div class="metric-value" style="font-size:20px;">{model_name}</div></div>', unsafe_allow_html=True)
         with col2:
             st.markdown(f'<div class="metric-box" style="border-left-color: #2ca02c;"><div class="metric-title">MAPE (ERROR %)</div><div class="metric-value">{mape:.2%}</div></div>', unsafe_allow_html=True)
         with col3:
             st.markdown(f'<div class="metric-box" style="border-left-color: #d62728;"><div class="metric-title">RMSE (ERROR MAGNITUDE)</div><div class="metric-value">{rmse:.2f}</div></div>', unsafe_allow_html=True)
-            
-        st.markdown("<br>", unsafe_allow_html=True)
         
         # --- UI LAYOUT VISUALIZATION INTERFACE ---
         st.subheader("🔮 Predictive Forecasting Model Inversion")
